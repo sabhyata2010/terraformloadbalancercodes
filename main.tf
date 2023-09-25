@@ -189,7 +189,7 @@ resource "azurerm_storage_blob" "IIS_Config" {
   storage_account_name   = "appstore15081978"
   storage_container_name = "data"
   type                   = "Block"
-  source                 = "IIS_Config.ps1"
+  source                 = "${path.module}/IIS_Config.ps1"
   depends_on             = [azurerm_storage_container.data]
 }
 
