@@ -1,8 +1,8 @@
 terraform {
   backend "azurerm" {
-    resource_group_name = "rgdeep3"
+    resource_group_name  = "rgdeep3"
     storage_account_name = "deep3"
-    container_name = "tfstate"
-    key = "terraform.tfstate"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
   }
 }
