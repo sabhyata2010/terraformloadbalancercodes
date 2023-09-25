@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = "3.71.0"
     }
   }
@@ -12,13 +12,13 @@ provider "azurerm" {
 }
 
 locals {
-  resource_group="app_rgdeep"
-  location="West Europe"
+  resource_group = "app_rgdeep"
+  location       = "West Europe"
 }
 
-resource "azurerm_resource_group" "app_rgdeep"{
-  name=local.resource_group
-  location=local.location
+resource "azurerm_resource_group" "app_rgdeep" {
+  name     = local.resource_group
+  location = local.location
 }
 
 
@@ -30,21 +30,21 @@ data "template_cloudinit_config" "linuxconfig" {
 
   part {
     content_type = "text/cloud-config"
-    content = "packages: ['nginx']"
+    content      = "packages: ['nginx']"
   }
 }
 
 resource "tls_private_key" "linux_key" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 # We want to save the private key to our machine
 # We can then use this key to connect to our Linux VM
 
 resource "local_file" "linuxkey" {
-  filename="linuxkey.pem"
-  content=tls_private_key.linux_key.private_key_pem
+  filename = "linuxkey.pem"
+  content  = tls_private_key.linux_key.private_key_pem
 }
 
 resource "azurerm_virtual_network" "app_network" {
@@ -71,10 +71,10 @@ resource "azurerm_network_interface" "app_interface" {
     subnet_id                     = azurerm_subnet.subnet1.id
     private_ip_address_allocation = "Dynamic"
   }
-  depends_on = [ 
+  depends_on = [
     azurerm_virtual_network.app_network,
-    azurerm_subnet.subnet1 
-    ]
+    azurerm_subnet.subnet1
+  ]
 }
 
 resource "azurerm_network_interface" "app_interface1" {
@@ -87,10 +87,10 @@ resource "azurerm_network_interface" "app_interface1" {
     subnet_id                     = azurerm_subnet.subnet1.id
     private_ip_address_allocation = "Dynamic"
   }
-  depends_on = [ 
+  depends_on = [
     azurerm_virtual_network.app_network,
-    azurerm_subnet.subnet1 
-    ]
+    azurerm_subnet.subnet1
+  ]
 }
 
 resource "azurerm_windows_virtual_machine" "app_vm" {
@@ -126,7 +126,7 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
   admin_username      = "adminuser"
   admin_password      = azurerm_key_vault_secret.vmpassword.value
   availability_set_id = azurerm_availability_set.app_set.id
-  custom_data = data.template_cloudinit_config.linuxconfig.rendered
+  custom_data         = data.template_cloudinit_config.linuxconfig.rendered
   network_interface_ids = [
     azurerm_network_interface.app_interface1.id,
   ]
@@ -148,17 +148,17 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
     version   = "latest"
   }
 
-  depends_on = [ 
+  depends_on = [
     azurerm_network_interface.app_interface1,
     azurerm_availability_set.app_set
   ]
 }
 
 resource "azurerm_availability_set" "app_set" {
-  name                = "app-set"
-  location            = azurerm_resource_group.app_rgdeep.location
-  resource_group_name = azurerm_resource_group.app_rgdeep.name
-  platform_fault_domain_count = 3
+  name                         = "app-set"
+  location                     = azurerm_resource_group.app_rgdeep.location
+  resource_group_name          = azurerm_resource_group.app_rgdeep.name
+  platform_fault_domain_count  = 3
   platform_update_domain_count = 3
   depends_on = [
     azurerm_resource_group.app_rgdeep
@@ -177,9 +177,9 @@ resource "azurerm_storage_container" "data" {
   name                  = "data"
   storage_account_name  = "appstore19102010"
   container_access_type = "blob"
-  depends_on = [ 
+  depends_on = [
     azurerm_storage_account.appstore
-    ]
+  ]
 }
 
 # Here we are uploading our IIS Configuration script as a blob
@@ -190,7 +190,7 @@ resource "azurerm_storage_blob" "IIS_Config" {
   storage_container_name = "data"
   type                   = "Block"
   source                 = "IIS_Config.ps1"
-  depends_on = [ azurerm_storage_container.data ]
+  depends_on             = [azurerm_storage_container.data]
 }
 
 resource "azurerm_virtual_machine_extension" "vm_extension" {
@@ -199,9 +199,9 @@ resource "azurerm_virtual_machine_extension" "vm_extension" {
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
   type_handler_version = "1.10"
-  depends_on = [ 
+  depends_on = [
     azurerm_storage_blob.IIS_Config
-    ]
+  ]
 
   settings = <<SETTINGS
  {
@@ -218,7 +218,7 @@ resource "azurerm_network_security_group" "app_nsg" {
   resource_group_name = azurerm_resource_group.app_rgdeep.name
 
 
-# We are creating a rule to allow traffic on port 80
+  # We are creating a rule to allow traffic on port 80
   security_rule {
     name                       = "Allow_HTTP"
     priority                   = 200
@@ -235,19 +235,19 @@ resource "azurerm_network_security_group" "app_nsg" {
 resource "azurerm_subnet_network_security_group_association" "nsg_association" {
   subnet_id                 = azurerm_subnet.subnet1.id
   network_security_group_id = azurerm_network_security_group.app_nsg.id
-  depends_on = [ 
+  depends_on = [
     azurerm_network_security_group.app_nsg
   ]
 }
 
 
 resource "azurerm_key_vault" "app_vault" {
-  name                        = "appvault19012010"
-  location                    = azurerm_resource_group.app_rgdeep.location
-  resource_group_name         = azurerm_resource_group.app_rgdeep.name
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
-  soft_delete_retention_days  = 7
-  purge_protection_enabled    = false
+  name                       = "appvault19012010"
+  location                   = azurerm_resource_group.app_rgdeep.location
+  resource_group_name        = azurerm_resource_group.app_rgdeep.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
 
   sku_name = "standard"
 
@@ -266,7 +266,7 @@ resource "azurerm_key_vault" "app_vault" {
       "Get",
     ]
   }
-  depends_on = [ 
+  depends_on = [
     azurerm_resource_group.app_rgdeep
   ]
 }
@@ -277,7 +277,7 @@ resource "azurerm_key_vault_secret" "vmpassword" {
   name         = "vmpassword"
   value        = "Welcome@12345"
   key_vault_id = azurerm_key_vault.app_vault.id
-  depends_on = [ azurerm_key_vault.app_vault ]
+  depends_on   = [azurerm_key_vault.app_vault]
 }
 
 resource "azurerm_public_ip" "load_ip" {
@@ -285,7 +285,7 @@ resource "azurerm_public_ip" "load_ip" {
   location            = azurerm_resource_group.app_rgdeep.location
   resource_group_name = azurerm_resource_group.app_rgdeep.name
   allocation_method   = "Static"
-  sku = "Standard"
+  sku                 = "Standard"
 }
 
 resource "azurerm_lb" "app_balancer" {
@@ -297,7 +297,7 @@ resource "azurerm_lb" "app_balancer" {
     name                 = "frontend-ip"
     public_ip_address_id = azurerm_public_ip.load_ip.id
   }
-  sku="Standard"
+  sku = "Standard"
   depends_on = [
     azurerm_public_ip.load_ip
   ]
@@ -337,7 +337,7 @@ resource "azurerm_lb_probe" "ProbeA" {
   name            = "ProbeA"
   port            = 80
   depends_on = [
-   azurerm_lb.app_balancer
+    azurerm_lb.app_balancer
   ]
 }
 
@@ -348,10 +348,10 @@ resource "azurerm_lb_rule" "RuleA" {
   frontend_port                  = 80
   backend_port                   = 80
   frontend_ip_configuration_name = "frontend-ip"
-  backend_address_pool_ids = [ azurerm_lb_backend_address_pool.PoolA.id ]
-  probe_id = azurerm_lb_probe.ProbeA.id
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.PoolA.id]
+  probe_id                       = azurerm_lb_probe.ProbeA.id
   depends_on = [
-   azurerm_lb.app_balancer,
-   azurerm_lb_probe.ProbeA
+    azurerm_lb.app_balancer,
+    azurerm_lb_probe.ProbeA
   ]
 }
