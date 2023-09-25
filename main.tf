@@ -185,11 +185,11 @@ resource "azurerm_storage_container" "data" {
 # Here we are uploading our IIS Configuration script as a blob
 #to the Azure storage account
 resource "azurerm_storage_blob" "IIS_Config" {
-  name                   = "IIS_Config.ps1"
+  name                   = "iis_config.ps1"
   storage_account_name   = "appstore15081978"
   storage_container_name = "data"
   type                   = "Block"
-  source                 = "${path.module}/IIS_Config.ps1"
+  source                 = "${path.module}/iis_config.ps1"
   depends_on             = [azurerm_storage_container.data]
 }
 
@@ -205,8 +205,8 @@ resource "azurerm_virtual_machine_extension" "vm_extension" {
 
   settings = <<SETTINGS
  {
-  "fileUris": ["https://${azurerm_storage_account.appstore.name}.blob.core.windows.net/data/IIS_Config.ps1"],
-    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -file IIS_Config.ps1"
+  "fileUris": ["https://${azurerm_storage_account.appstore.name}.blob.core.windows.net/data/iis_config.ps1"],
+    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -file iis_config.ps1"
  }
 SETTINGS
 }
