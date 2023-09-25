@@ -166,7 +166,7 @@ resource "azurerm_availability_set" "app_set" {
 }
 
 resource "azurerm_storage_account" "appstore" {
-  name                     = "appstore19102010"
+  name                     = "appstore15081978"
   resource_group_name      = azurerm_resource_group.app_rgdeep.name
   location                 = azurerm_resource_group.app_rgdeep.location
   account_tier             = "Standard"
@@ -175,7 +175,7 @@ resource "azurerm_storage_account" "appstore" {
 
 resource "azurerm_storage_container" "data" {
   name                  = "data"
-  storage_account_name  = "appstore19102010"
+  storage_account_name  = "appstore15081978"
   container_access_type = "blob"
   depends_on = [
     azurerm_storage_account.appstore
@@ -186,7 +186,7 @@ resource "azurerm_storage_container" "data" {
 #to the Azure storage account
 resource "azurerm_storage_blob" "IIS_Config" {
   name                   = "IIS_Config.ps1"
-  storage_account_name   = "appstore19102010"
+  storage_account_name   = "appstore15081978"
   storage_container_name = "data"
   type                   = "Block"
   source                 = "IIS_Config.ps1"
