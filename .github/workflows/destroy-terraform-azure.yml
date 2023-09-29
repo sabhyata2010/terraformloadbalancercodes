@@ -21,7 +21,7 @@ jobs:
 
     - name: Terraform Destroy
       run: |
-        terraform destroy
+        terraform destroy -auto-approve
 
     - name: Clean Up
       run: rm -rf .terraform
