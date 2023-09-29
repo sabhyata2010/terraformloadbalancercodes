@@ -20,6 +20,3 @@ resource "azurerm_resource_group" "app_rgdeep" {
   name     = local.resource_group
   location = local.location
 }
-
-
-data "azurerm_client_config" "current" {}
