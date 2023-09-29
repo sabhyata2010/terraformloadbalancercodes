@@ -1,0 +1,27 @@
+name: Azure Terraform Destroy
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  terraform_destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 3.70.0
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Destroy
+      run: |
+        terraform destroy -auto-approve
+
+    - name: Clean Up
+      run: rm -rf .terraform
