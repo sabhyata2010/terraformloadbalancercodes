@@ -231,7 +231,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_association" {
 
 
 resource "azurerm_key_vault" "app_vault" {
-  name                       = "appvault19012010"
+  name                       = "appvault16071982"
   location                   = azurerm_resource_group.app_rgdeep.location
   resource_group_name        = azurerm_resource_group.app_rgdeep.name
   tenant_id                  = data.azurerm_client_config.current.tenant_id
