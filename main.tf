@@ -115,7 +115,7 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
   admin_username      = "adminuser"
   admin_password      = azurerm_key_vault_secret.vmpassword.value
   availability_set_id = azurerm_availability_set.app_set.id
-  user_data           = file("nginx-install.sh")
+  user_data           = base64encode(file("nginx-install.sh"))
   network_interface_ids = [
     azurerm_network_interface.app_interface1.id,
   ]
