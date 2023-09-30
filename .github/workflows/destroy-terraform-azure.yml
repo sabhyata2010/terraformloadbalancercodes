@@ -1,27 +1,41 @@
-name: Azure Terraform Destroy
-
+name: 'Terraform Destroy'
+ 
 on:
-  workflow_dispatch:  # Manual trigger
-
+  workflow_dispatch:
+   
 jobs:
-  terraform_destroy:
+  terraform:
+    name: 'Terraform'
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
     runs-on: ubuntu-latest
-
+    environment: production
+ 
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+ 
     steps:
-    - name: Checkout Repository
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
       uses: actions/checkout@v2
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
+         
+    - name: 'Terraform Init'
+      uses: hashicorp/terraform-github-actions@master
       with:
-        terraform_version: 3.75.0
-
-    - name: Terraform Init
-      run: terraform init
-
+        tf_actions_version: 0.14.8
+        tf_actions_subcommand: 'init'
+        tf_actions_working_dir: "./terraform"
+ 
     - name: Terraform Destroy
-      run: |
-        terraform destroy -auto-approve
-
-    - name: Clean Up
-      run: rm -rf .terraform
+      if: github.ref == 'refs/heads/main'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: 0.14.8
+        tf_actions_subcommand: 'destroy'
+        tf_actions_working_dir: "./terraform"
+        args: '-auto-approve'
