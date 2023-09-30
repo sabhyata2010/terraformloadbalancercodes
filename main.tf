@@ -23,16 +23,6 @@ resource "azurerm_resource_group" "app_rgdeep" {
 
 data "azurerm_client_config" "current" {}
 
-data "template_cloudinit_config" "linuxconfig" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    content_type = "text/cloud-config"
-    content      = "packages: ['nginx']"
-  }
-}
-
 resource "tls_private_key" "linux_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -125,7 +115,7 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
   admin_username      = "adminuser"
   admin_password      = azurerm_key_vault_secret.vmpassword.value
   availability_set_id = azurerm_availability_set.app_set.id
-  user_data         = data.template_cloudinit_config.linuxconfig.rendered
+  user_data = "${file("nginx-install.sh")}"
   network_interface_ids = [
     azurerm_network_interface.app_interface1.id,
   ]
